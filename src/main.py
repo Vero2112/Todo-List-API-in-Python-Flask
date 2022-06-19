@@ -42,8 +42,10 @@ def create_task():
 # We already used request.json for that, since we know that the request will be in format application/json. If that is not known, you may want to use request.get_json(force=True) to ignore the content type and treat it like json.
     body = request.get_json()
     print(body)
-    task = Task(text=body["text"], done= False )
-    return 'Response for the POST todo'
+    task = Task(text=body["text"], done= False)
+    db.session.add(task)
+    db.session.commit()
+    return jsonify(task.serialize())
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
