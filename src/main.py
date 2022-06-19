@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Task
 #from models import Person
 
 app = Flask(__name__)
@@ -20,24 +20,30 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
-# Handle/serialize errors like a JSON object
-@app.errorhandler(APIException)
-def handle_invalid_usage(error):
-    return jsonify(error.to_dict()), error.status_code
+todos = [
+    { "text": "My first task", "done": False }
+]
 
-# generate sitemap with all your endpoints
+# generate_sitemap con todos los endpoints
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+    # return "Hola!"
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+@app.route('/todos', methods=['GET'])
+def get_task():
+    json_text = jsonify(todos)
+    return json_text
 
-    return jsonify(response_body), 200
+@app.route('/todos', methods=['POST'])
+def create_task():
+    # request_body = request.data que significa?
+# We already used request.json for that, since we know that the request will be in format application/json. If that is not known, you may want to use request.get_json(force=True) to ignore the content type and treat it like json.
+    body = request.get_json()
+    print(body)
+    task = Task(text=body["text"], done= False )
+    return 'Response for the POST todo'
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
