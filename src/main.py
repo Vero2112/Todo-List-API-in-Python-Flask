@@ -24,6 +24,10 @@ setup_admin(app)
 #     { "text": "My first task", "done": False }
 # ]
 
+@app.errorhandler(APIException)
+def handle_invalid_usage(error):
+    return jsonify(error.to_dict()), error.status_code
+
 # generate_sitemap con todos los endpoints
 @app.route('/')
 def sitemap():
@@ -31,7 +35,7 @@ def sitemap():
     # return "Hola!"
 
 
-@app.route('/todos', methods=['GET'])
+@app.route('/task', methods=['GET'])
 def get_task():
     # json_text = jsonify(todos) learnpack devuelve asi las task, no mapea
     # no puedo retornarla directamente, necesito serializarla, hay que transoformala en json. necesito llamar a la funcion list 
@@ -46,7 +50,7 @@ def get_task():
     return jsonify(all_tasks)
     # return json_text
 
-@app.route('/todos', methods=['POST'])
+@app.route('/task', methods=['POST'])
 def create_task():
     # request_body = request.data que significa?
 # We already used request.json for that, since we know that the request will be in format application/json. If that is not known, you may want to use request.get_json(force=True) to ignore the content type and treat it like json.
@@ -62,28 +66,61 @@ def create_task():
 # models line 33-37, pq no le ponemos el parametro self?
     return jsonify(task.serialize())
 
-@app.route('/todos/<int:task_id>', methods=['PUT'])
+@app.route('/task/<int:task_id>', methods=['PUT'])
 def refresh_task(task_id):
     task = Task.query.get(task_id)
-    print("hola")
-    print(task)
+    # print("hola")
+    # print(task)
+    # print(body)
+    if task is None:
+        raise APIException("Tarea no encontrada", 404)
     body = request.get_json()
+    if not ("done" in body):
+        raise APIException("Tarea no encontrada", 404)
     task.done = body["done"]
     db.session.commit()
     return jsonify(task.serialize())
 
-@app.route('/todos/<int:task_id>', methods=['GET'])
+@app.route('/task/<int:task_id>', methods=['GET'])
 def get_refresh_task(task_id):
     task = Task.query.get(task_id)
-
+    if task is None:
+        raise APIException("Tarea no encontrada", 404)
     return jsonify(task.serialize())
 
-@app.route('/todos/<int:task_id>', methods=['DELETE'])
+@app.route('/task/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
     task = Task.query.get(task_id)
+    if task is None:
+        raise APIException("Tarea no encontrada", 404)
     db.session.delete(task)
     db.session.commit()
     return jsonify(task.serialize())
+
+@app.route('/user', methods=['GET'])
+def get_user():
+    # response_body = {"msg": "Hello, this is your GET/user response"}
+    # return jsonify(response_body), 200
+    users = User.query.all()
+    all_users = list(map(lambda user: user.serialize(), users))
+# todos = db.session.query(Todo)
+# list_todo = []
+# for todo in todos:
+# list_todo.append(todo.serialize())
+# return list_todo
+
+    return jsonify(all_users), 200
+
+@app.route('/user', methods=['POST'])
+def create_user():
+   
+    body = request.get_json()
+    print(body)
+    user = User(email=body["email"], is_active=True, password="******")
+    db.session.add(user)
+    db.session.commit()
+    return jsonify(user.serialize())
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

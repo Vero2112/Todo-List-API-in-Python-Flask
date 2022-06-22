@@ -24,6 +24,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(120), unique=True, nullable=False)
     done = db.Column(db.Boolean(), unique=False, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship(User)
 
 # transforma la clase en un string, similar a template string de JS
     def __repr__(self):
