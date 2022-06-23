@@ -17,6 +17,7 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "is_active": self.is_active
             # do not serialize the password, its a security breach
         }
 
@@ -37,5 +38,6 @@ class Task(db.Model):
             "id": self.id,
             "text": self.text,
             "done": self.done,
+            "user_id": self.user_id
             # do not serialize the password, its a security breach
         }
