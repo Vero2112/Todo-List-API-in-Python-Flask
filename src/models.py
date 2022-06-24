@@ -23,7 +23,7 @@ class User(db.Model):
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(120), unique=True, nullable=False)
+    text = db.Column(db.String(120), unique=False, nullable=False)
     done = db.Column(db.Boolean(), unique=False, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship(User)

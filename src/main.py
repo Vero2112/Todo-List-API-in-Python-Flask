@@ -47,7 +47,7 @@ def get_task():
     # print (tasks)
     # print("hola")
     # print(all_tasks)
-    return jsonify(all_tasks)
+    return jsonify(all_tasks), 201
     # return json_text
 
 @app.route('/task', methods=['POST'])
@@ -57,7 +57,7 @@ def create_task():
     body = request.get_json()
     print(body)
 # body es un diccionario equivalente a un objeto en JS, text es la key
-    task = Task(text=body["text"], done= False)
+    task = Task(text=body["text"], done= False, user_id=body["user_id"])
 # Una vez instanciada la clase, agrego objeto a mi base de datos
     db.session.add(task)
 # confirmamos añadir tarea a mi base de datos, pero no la puedo retornar directamente, para eso necesito serializar
@@ -98,7 +98,7 @@ def delete_task(task_id):
     return jsonify(task.serialize())
 
 @app.route('/user', methods=['GET'])
-def get_user():
+def get_all_users():
     # response_body = {"msg": "Hello, this is your GET/user response"}
     # return jsonify(response_body), 200
     users = User.query.all()
@@ -111,12 +111,20 @@ def get_user():
 
     return jsonify(all_users), 200
 
+@app.route('/user/<user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        raise APIException("Usuario no encontrado", 404)
+    return jsonify(user.serialize()), 200
+
+
 @app.route('/user', methods=['POST'])
 def create_user():
    
     body = request.get_json()
     print(body)
-    user = User(email=body["email"], is_active=True, password="******")
+    user = User(email=body["email"], is_active=True, password="****")
     db.session.add(user)
     db.session.commit()
     return jsonify(user.serialize())
