@@ -20,9 +20,6 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
-# todos = [
-#     { "text": "My first task", "done": False }
-# ]
 
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -37,41 +34,25 @@ def sitemap():
 
 @app.route('/task', methods=['GET'])
 def get_task():
-    # json_text = jsonify(todos) learnpack devuelve asi las task, no mapea
-    # no puedo retornarla directamente, necesito serializarla, hay que transoformala en json. necesito llamar a la funcion list 
-    # y se mapea. En vez de utilizar una función flecha equiv función lambda y va a llamar al serializador y me va
-    # a retornar el serializador
-# esta Task es line 23 models?
+
     tasks = Task.query.all()
     all_tasks = list(map(lambda task: task.serialize(), tasks))
-    # print (tasks)
-    # print("hola")
-    # print(all_tasks)
     return jsonify(all_tasks), 201
-    # return json_text
+
 
 @app.route('/task', methods=['POST'])
 def create_task():
-    # request_body = request.data que significa?
-# We already used request.json for that, since we know that the request will be in format application/json. If that is not known, you may want to use request.get_json(force=True) to ignore the content type and treat it like json.
+   
     body = request.get_json()
-    print(body)
-# body es un diccionario equivalente a un objeto en JS, text es la key
     task = Task(text=body["text"], done= False, user_id=body["user_id"])
-# Una vez instanciada la clase, agrego objeto a mi base de datos
     db.session.add(task)
-# confirmamos añadir tarea a mi base de datos, pero no la puedo retornar directamente, para eso necesito serializar
     db.session.commit()
-# coge un objeto, tipo task y me lo transforma en un diccionario
-# models line 33-37, pq no le ponemos el parametro self?
     return jsonify(task.serialize())
 
 @app.route('/task/<int:task_id>', methods=['PUT'])
 def refresh_task(task_id):
     task = Task.query.get(task_id)
-    # print("hola")
-    # print(task)
-    # print(body)
+
     if task is None:
         raise APIException("Tarea no encontrada", 404)
     body = request.get_json()
@@ -99,32 +80,26 @@ def delete_task(task_id):
 
 @app.route('/user', methods=['GET'])
 def get_all_users():
-    # response_body = {"msg": "Hello, this is your GET/user response"}
-    # return jsonify(response_body), 200
+    
     users = User.query.all()
     all_users = list(map(lambda user: user.serialize(), users))
-# todos = db.session.query(Todo)
-# list_todo = []
-# for todo in todos:
-# list_todo.append(todo.serialize())
-# return list_todo
-
     return jsonify(all_users), 200
 
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user(user_id):
+
     user = User.query.get(user_id)
     if user is None:
         raise APIException("Usuario no encontrado", 404)
     return jsonify(user.serialize()), 200
 
 
-@app.route('/user', methods=['POST'])
+@app.route('/user/register', methods=['POST'])
 def create_user():
    
     body = request.get_json()
     print(body)
-    user = User(email=body["email"], is_active=True, password="****")
+    user = User(email=body["email"], is_active=True, password=body["password"])
     db.session.add(user)
     db.session.commit()
     return jsonify(user.serialize())
